@@ -97,5 +97,42 @@
 - File: `src/types/permissions.ts`, `src/tools/BashTool/bashPermissions.ts`, `src/services/remoteManagedSettings/securityCheck.tsx`, `scripts/stub-modules.mjs`, and others.
 
 ---
+# Cross-Cutting Features and Shared Infrastructure
 
-*This file was auto-updated to provide a deeper technical summary of the repository and its software architecture.*
+The following technical capabilities span multiple modules and workflows, providing cohesive behaviors throughout the claude-code-source-code project.
+
+## Error Handling & Exception Management
+- Centralized error classes such as `AbortError`, `ShellError`, `ConfigParseError`, and `TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` handle common and security-sensitive error flows (see `src/utils/errors.ts`).
+- Tool error formatting, with safe truncation, multi-part reporting, and structured type validation for Zod errors, is performed in `src/utils/toolErrors.ts`.
+- The system distinguishes between aborts, shell errors, configuration problems, and telemetry-safe errors for both user messaging and audit/analytics.
+
+## Context Management
+- Context window and model support logic—determining allowed tokens, experimental treatments, and project settings—is abstracted in `src/utils/context.ts`.
+- The `agentContext` module provides AsyncLocalStorage-powered agent-scoped context storage, allowing subagents and agent swarms to share invocation state (`src/utils/agentContext.ts`).
+
+## Logging & Analytics
+- Multiple telemetry streams and event logging points exist, including tool-use analytics (`src/utils/unaryLogging.ts`) and language detection for logs (`src/utils/cliHighlight.ts`).
+- Tracing of cross-tool actions uses standard, privacy-audited wrappers.
+
+## Plugin & Extension System
+- Plugins are discovered, enabled, migrated, and tracked through an elaborate, layered policy-overriding system (`src/utils/plugins/pluginStartupCheck.ts`).
+- The system supports user/project/policy/flag/add-dir scoping, allowing extensions to be enabled or blocked at a fine-grained level.
+- Plugin state and loading logic are global and immutable during runtime per session.
+
+## Streaming & Async Operations
+- Asynchronous streaming primitives are abstracted in a reusable `Stream<T>` class (`src/utils/stream.ts`) for pipeline/component consumption.
+
+## UI Integration & Prompt Handling
+- React context wrappers (e.g., `src/context/promptOverlayContext.tsx`) enable overlay suggestion and dialog flows as cross-cutting UI primitives for prompt handling.
+- The CLI's root runtime is handled by ink's root and managed instance API, enabling exit, error, and render hooks to be available to all command flows (`src/ink/root.ts`).
+
+## Global & Project-Wide Configuration
+- Compile-time constants (such as version, feedback URL, etc.) are injected via macro polyfills (`stubs/global.d.ts`).
+- All commands have a project-scoped config/settings UI and local JS interface (`src/commands/config/config.tsx`).
+
+## Tool Schema & Validation Caching
+- Runtime tool schemas are cached between session loads for efficiency, with logic to clear and reset during session auth or tool reload (`src/utils/toolSchemaCache.ts`).
+
+### Further enrichment will append here as analysis continues.
+
+*Updated by m0ver on 2026-04-23 13:15:08 UTC*
